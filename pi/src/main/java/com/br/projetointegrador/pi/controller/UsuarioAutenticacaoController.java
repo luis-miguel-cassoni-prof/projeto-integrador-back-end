@@ -1,6 +1,7 @@
 package com.br.projetointegrador.pi.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import jakarta.validation.Valid;
 
 @RestController 
 @RequestMapping ("/usuario/autenticacao")
+@CrossOrigin (origins = "http://localhost:4200/")
 public class UsuarioAutenticacaoController {
     
     @Autowired 

@@ -59,6 +59,8 @@ public class UsuarioService implements UserDetailsService {
             throw new GenericException("Erro! O e-mail ou a senha estão incorretos", "INVALID_CREDENTIALS", HttpStatus.UNAUTHORIZED);
         }
 
+        log.info("Algum usuário está realizadno login");
+
         return new UsuarioResponse(usuario.getIdUsuario(), usuario.getNome(), usuario.getPermissao());
     }
 
