@@ -1,6 +1,7 @@
 package com.br.projetointegrador.pi.config;
 
 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -9,6 +10,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+
+import jakarta.servlet.DispatcherType;
+
 @Configuration 
 public class SecurityConfig {
 
@@ -16,15 +20,34 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
         .cors(Customizer.withDefaults())
-        .csrf(csrf -> {
-            csrf.disable();
-        })
+        .csrf(Customizer.withDefaults())
         .authorizeHttpRequests(authReq -> {
             authReq
-            .requestMatchers("/usuario/autenticacao/cadastrar", "/usuario/autenticacao/login").permitAll()
+            .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+            .requestMatchers("/usuario/autenticacao/cadastrar", "/usuario/autenticacao/login", "/usuario/autenticacao/csrf", "/logout")
+            .permitAll()
             .anyRequest().authenticated();
         })
-        .httpBasic(Customizer.withDefaults())
+        .exceptionHandling(exception -> exception
+        .authenticationEntryPoint((request, response, authException) -> {
+            response.setStatus(401);
+        }))
+        .formLogin(form -> form
+            .loginProcessingUrl("/usuario/autenticacao/login")
+            .usernameParameter("email")
+            .passwordParameter("senha")
+            .successHandler((request, response, authentication) -> {
+                response.setStatus(200);
+            })
+            .failureHandler((request, response, exception) -> {
+                response.setStatus(401);
+            })
+            .permitAll()
+        )
+        .logout(logout -> logout
+        .logoutSuccessHandler((request, response, authentication) -> {
+            response.setStatus(204);
+        }))
         .build();
     }
 

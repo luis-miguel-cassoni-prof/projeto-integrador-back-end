@@ -9,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.br.projetointegrador.pi.dto.usuario.UsuarioCadastrarRequest;
-import com.br.projetointegrador.pi.dto.usuario.UsuarioLoginRequest;
 import com.br.projetointegrador.pi.dto.usuario.UsuarioResponse;
 import com.br.projetointegrador.pi.enumerators.Permissao;
 import com.br.projetointegrador.pi.exceptions.GenericException;
@@ -48,18 +47,6 @@ public class UsuarioService implements UserDetailsService {
         log.info("Cadastrando usuário!");
 
         usuarioRepository.save(usuario);
-
-        return new UsuarioResponse(usuario.getIdUsuario(), usuario.getNome(), usuario.getPermissao());
-    }
-
-    public UsuarioResponse login(UsuarioLoginRequest usuarioRequest) {
-        Usuario usuario = usuarioRepository.findByEmail(usuarioRequest.email());
-
-        if(usuario == null || !passwordEncoder.matches(usuarioRequest.senha(), usuario.getHashSenha())) {
-            throw new GenericException("Erro! O e-mail ou a senha estão incorretos", "INVALID_CREDENTIALS", HttpStatus.UNAUTHORIZED);
-        }
-
-        log.info("Algum usuário está realizadno login");
 
         return new UsuarioResponse(usuario.getIdUsuario(), usuario.getNome(), usuario.getPermissao());
     }
