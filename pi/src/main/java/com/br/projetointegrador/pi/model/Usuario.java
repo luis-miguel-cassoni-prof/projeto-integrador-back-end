@@ -24,11 +24,12 @@ public class Usuario {
     private Long idUsuario;
     
     @NotBlank (message = "O nome não pode estar vazio")
-    @Column (length = 50)
+    @Column (length = 50, unique = true)
     private String nome;
 
     @Email 
     @NotBlank (message = "O e-mail não pode estar vazio")
+    @Column (unique = true)
     private String email;
 
     @Column (length = 60)

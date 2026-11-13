@@ -20,7 +20,7 @@ public class SecurityConfig {
         })
         .authorizeHttpRequests(authReq -> {
             authReq
-            .requestMatchers("/usuario/cadastrar").permitAll()
+            .requestMatchers("/usuario/autenticacao/cadastrar", "/usuario/autenticacao/login").permitAll()
             .anyRequest().authenticated();
         })
         .httpBasic(Customizer.withDefaults())
