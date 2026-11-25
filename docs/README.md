@@ -48,7 +48,7 @@ O repositório inclui um Dev Container que configura o Java, inicia o MySQL e fo
 
 O diagrama apresenta as cinco entidades do sistema, seus relacionamentos e os enums que definem a permissão do usuário, o tipo e o status de cada publicação.
 
-![Diagrama de classes do Achados e Perdidos da UNIFIO](./docs/mermaid-diagram.png)
+![Diagrama de classes do Achados e Perdidos da UNIFIO](./mermaid-diagram.png)
 
 ## Integrantes
 
