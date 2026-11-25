@@ -14,3 +14,5 @@ Este repositório reúne a API do projeto, desenvolvida em **Java 21** com **Spr
 | Luiz Henrique Azevedo Campese | 273740 |
 | Vinicius Pavani Tossi | 271145 |
 | Vinicius Francisco dos Santos Ramos | 272586 |
+
+![Documentação Oficial da API](https://github.com/luis-miguel-cassoni-prof/projeto-integrador-back-end/tree/main/docs)
