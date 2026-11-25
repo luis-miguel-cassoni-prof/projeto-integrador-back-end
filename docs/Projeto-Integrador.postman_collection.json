@@ -1,0 +1,1555 @@
+{
+  "info": {
+    "_postman_id": "8361041c-61b2-42c1-9e31-98fe97ae313b",
+    "name": "Projeto Integrador · Evidências da API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "59185172",
+    "_collection_link": "https://go.postman.co/collection/59185172-8361041c-61b2-42c1-9e31-98fe97ae313b?source=collection_link",
+    "description": "Execute toda a coleção em ordem no Collection Runner com cookies habilitados, em banco de teste com ao menos um local. Ajuste baseUrl. As variáveis temporárias valem durante a execução. Cada rodada cria uma conta de teste que permanece no banco. A limpeza exclui a publicação e os contatos gerados. O último grupo usa adminEmail e adminSenha do ambiente, se fornecidos. Exporte os resultados do Runner para guardar as evidências reais."
+  },
+  "item": [
+    {
+      "name": "01 · Cadastro e sessão",
+      "item": [
+        {
+          "name": "Obter CSRF e preparar a execução",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/autenticacao/csrf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "autenticacao",
+                "csrf"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const run = pm.variables.replaceIn(\"{{$guid}}\").slice(0, 18);",
+                  "pm.variables.set(\"run\", run);",
+                  "pm.variables.set(\"emailTeste\", \"pi.\" + run + \"@unifio.edu.br\");",
+                  "pm.variables.set(\"senhaTeste\", pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Obter CSRF e preparar a execução\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.token).to.be.a(\"string\").and.not.empty;",
+                  "  pm.expect(data.headerName).to.be.a(\"string\").and.not.empty;",
+                  "  pm.variables.set(\"csrfHeader\", data.headerName);",
+                  "  pm.variables.set(\"csrfToken\", data.token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar usuário de teste",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/autenticacao/cadastrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "autenticacao",
+                "cadastrar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Evidência {{run}}\",\n  \"email\": \"{{emailTeste}}\",\n  \"senha\": \"{{senhaTeste}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Cadastrar usuário de teste\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idUsuario).to.be.a(\"number\").above(0);",
+                  "  pm.variables.set(\"idUsuario\", data.idUsuario);",
+                  "  pm.expect(data.permissao).to.equal(\"USUARIO\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Entrar com a conta criada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/autenticacao/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "autenticacao",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{emailTeste}}",
+                  "type": "text"
+                },
+                {
+                  "key": "senha",
+                  "value": "{{senhaTeste}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Renovar CSRF após o login",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/autenticacao/csrf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "autenticacao",
+                "csrf"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Renovar CSRF após o login\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.token).to.be.a(\"string\").and.not.empty;",
+                  "  pm.expect(data.headerName).to.be.a(\"string\").and.not.empty;",
+                  "  pm.variables.set(\"csrfHeader\", data.headerName);",
+                  "  pm.variables.set(\"csrfToken\", data.token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 · Usuário e locais",
+      "item": [
+        {
+          "name": "Consultar meu perfil",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "me"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Consultar meu perfil\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idUsuario).to.equal(Number(pm.variables.get(\"idUsuario\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar usuário por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/{{idUsuario}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "{{idUsuario}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Buscar usuário por ID\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idUsuario).to.equal(Number(pm.variables.get(\"idUsuario\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar locais e selecionar o primeiro",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/local/listarTodos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "local",
+                "listarTodos"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Listar locais e selecionar o primeiro\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data, \"Cadastre ao menos um local no banco de teste\").to.be.an(\"array\").that.is.not.empty;",
+                  "  pm.variables.set(\"idLocal\", data[0].idLocal);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar local selecionado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/local/{{idLocal}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "local",
+                "{{idLocal}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Consultar local selecionado\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idLocal).to.equal(Number(pm.variables.get(\"idLocal\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 · Contatos",
+      "item": [
+        {
+          "name": "Cadastrar contato principal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contato",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contato"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contato\": \"principal.{{run}}@example.org\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Cadastrar contato principal\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idContato).to.be.a(\"number\").above(0);",
+                  "  pm.variables.set(\"idContato\", data.idContato);",
+                  "  pm.expect(data.usuario.idUsuario).to.equal(Number(pm.variables.get(\"idUsuario\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar contato alternativo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contato",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contato"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contato\": \"alternativo.{{run}}@example.org\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Cadastrar contato alternativo\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idContato).to.be.a(\"number\").above(0);",
+                  "  pm.variables.set(\"idExtra\", data.idContato);",
+                  "  pm.expect(data.usuario.idUsuario).to.equal(Number(pm.variables.get(\"idUsuario\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar meus contatos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/contato/listarTodos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contato",
+                "listarTodos"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Listar meus contatos\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.map(c => c.idContato)).to.include(Number(pm.variables.get(\"idContato\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar contato principal",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/contato/{{idContato}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contato",
+                "{{idContato}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Buscar contato principal\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idContato).to.equal(Number(pm.variables.get(\"idContato\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar contato principal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contato/{{idContato}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contato",
+                "{{idContato}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contato\": \"editado.{{run}}@example.org\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Editar contato principal\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idContato).to.equal(Number(pm.variables.get(\"idContato\")));",
+                  "  pm.expect(data.contato).to.equal(pm.variables.replaceIn(\"editado.{{run}}@example.org\"));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 · Publicações",
+      "item": [
+        {
+          "name": "Rejeitar publicação sem contatos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idLocal\": {{idLocal}},\n  \"nome\": \"Caderno {{run}}\",\n  \"descricao\": \"Caderno azul da execução de teste\",\n  \"dataOcorrencia\": \"2026-01-15\",\n  \"status\": \"ATIVA\",\n  \"tipo\": \"PERDIDO\",\n  \"idsContatos\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar publicação com contato principal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idLocal\": {{idLocal}},\n  \"nome\": \"Caderno {{run}}\",\n  \"descricao\": \"Caderno azul da execução de teste\",\n  \"dataOcorrencia\": \"2026-01-15\",\n  \"status\": \"ATIVA\",\n  \"tipo\": \"PERDIDO\",\n  \"idsContatos\": [\n    {{idContato}}\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Criar publicação com contato principal\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idPublicacao).to.be.a(\"number\").above(0);",
+                  "  pm.variables.set(\"idPublicacao\", data.idPublicacao);",
+                  "  pm.expect(data.local.idLocal).to.equal(Number(pm.variables.get(\"idLocal\")));",
+                  "  pm.expect(data.usuario.idUsuario).to.equal(Number(pm.variables.get(\"idUsuario\")));",
+                  "  pm.expect(data.contatos.map(c => c.idContato)).to.include(Number(pm.variables.get(\"idContato\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar publicação",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/{{idPublicacao}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "{{idPublicacao}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Consultar publicação\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idPublicacao).to.equal(Number(pm.variables.get(\"idPublicacao\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar publicações",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/listarTodos?page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "listarTodos"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Listar publicações\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.content).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pesquisar pelo nome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/buscarPorNome?page=0&size=10&nome={{run}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "buscarPorNome"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "nome",
+                  "value": "{{run}}"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Pesquisar pelo nome\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.content).to.be.an(\"array\");",
+                  "  pm.expect(data.content.map(p => p.idPublicacao)).to.include(Number(pm.variables.get(\"idPublicacao\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar minhas publicações",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/minhas?page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "minhas"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Listar minhas publicações\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.content).to.be.an(\"array\");",
+                  "  pm.expect(data.content.map(p => p.idPublicacao)).to.include(Number(pm.variables.get(\"idPublicacao\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atualizar descrição da publicação",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/{{idPublicacao}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "{{idPublicacao}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idLocal\": {{idLocal}},\n  \"nome\": \"Caderno {{run}}\",\n  \"descricao\": \"Caderno azul com etiqueta\",\n  \"dataOcorrencia\": \"2026-01-15\",\n  \"status\": \"ATIVA\",\n  \"tipo\": \"PERDIDO\",\n  \"idsContatos\": [\n    {{idContato}}\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Atualizar descrição da publicação\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idPublicacao).to.equal(Number(pm.variables.get(\"idPublicacao\")));",
+                  "  pm.expect(data.descricao).to.equal(\"Caderno azul com etiqueta\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 · Contatos da publicação",
+      "item": [
+        {
+          "name": "Disponibilizar o contato alternativo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/{{idPublicacao}}/contatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "{{idPublicacao}}",
+                "contatos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idContato\": {{idExtra}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Disponibilizar o contato alternativo\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(201);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.idPublicacao).to.equal(Number(pm.variables.get(\"idPublicacao\")));",
+                  "  pm.expect(data.idContato).to.equal(Number(pm.variables.get(\"idExtra\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Conferir os dois vínculos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/{{idPublicacao}}/contatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "{{idPublicacao}}",
+                "contatos"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Conferir os dois vínculos\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.map(c => c.idContato)).to.have.members([\"idContato\", \"idExtra\"].map(k => Number(pm.variables.get(k))));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remover o vínculo alternativo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/{{idPublicacao}}/contatos/{{idExtra}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "{{idPublicacao}}",
+                "contatos",
+                "{{idExtra}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Conferir vínculo restante",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/{{idPublicacao}}/contatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "{{idPublicacao}}",
+                "contatos"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Conferir vínculo restante\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.map(c => c.idContato)).to.deep.equal([Number(pm.variables.get(\"idContato\"))]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 · Permissão, limpeza e logout",
+      "item": [
+        {
+          "name": "Dashboard recusa usuário comum",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir a publicação criada",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/{{idPublicacao}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "{{idPublicacao}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirmar exclusão da publicação",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/publicacao/{{idPublicacao}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "publicacao",
+                "{{idPublicacao}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir contato principal",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contato/{{idContato}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contato",
+                "{{idContato}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir contato alternativo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contato/{{idExtra}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contato",
+                "{{idExtra}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Encerrar sessão",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logout"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirmar encerramento da sessão",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "me"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 · Dashboard administrativo (opcional)",
+      "item": [
+        {
+          "name": "Obter CSRF para o administrador",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/autenticacao/csrf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "autenticacao",
+                "csrf"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"adminEmail\") || !pm.environment.get(\"adminSenha\")) pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Obter CSRF para o administrador\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.token).to.be.a(\"string\").and.not.empty;",
+                  "  pm.expect(data.headerName).to.be.a(\"string\").and.not.empty;",
+                  "  pm.variables.set(\"csrfHeader\", data.headerName);",
+                  "  pm.variables.set(\"csrfToken\", data.token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Entrar com a conta administrativa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/autenticacao/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "autenticacao",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{adminEmail}}",
+                  "type": "text"
+                },
+                {
+                  "key": "senha",
+                  "value": "{{adminSenha}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"adminEmail\") || !pm.environment.get(\"adminSenha\")) pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Renovar CSRF administrativo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuario/autenticacao/csrf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuario",
+                "autenticacao",
+                "csrf"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"adminEmail\") || !pm.environment.get(\"adminSenha\")) pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Renovar CSRF administrativo\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data.token).to.be.a(\"string\").and.not.empty;",
+                  "  pm.expect(data.headerName).to.be.a(\"string\").and.not.empty;",
+                  "  pm.variables.set(\"csrfHeader\", data.headerName);",
+                  "  pm.variables.set(\"csrfToken\", data.token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar métricas administrativas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"adminEmail\") || !pm.environment.get(\"adminSenha\")) pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Consultar métricas administrativas\", () => {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  const data = pm.response.json();",
+                  "  for (const campo of [\"usuariosCadastrados\", \"publicacoesAtivas\", \"publicacoesFinalizadas\", \"perdidos\", \"encontrados\"]) pm.expect(data[campo], campo).to.be.a(\"number\").at.least(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Encerrar sessão administrativa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "{{csrfHeader}}",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logout"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"adminEmail\") || !pm.environment.get(\"adminSenha\")) pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
