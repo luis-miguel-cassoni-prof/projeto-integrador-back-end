@@ -53,6 +53,8 @@ Senha: senhateste456
 
 As evidências estão no arquivo postman do docs, siga as instruções corretamente, não esqueça dos tokens Csrf e do cabeçalho.
 
+*Caso você não costume usar postman, o back-end possui uma configuração para documentação OpenAPI/Swagger, basta ao fim do endereço colocar /swagger-ui/index.html*
+
 ## Integrantes
 
 | Nome | RA |
