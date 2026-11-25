@@ -50,6 +50,20 @@ O diagrama apresenta as cinco entidades do sistema, seus relacionamentos e os en
 
 ![Diagrama de classes do Achados e Perdidos da UNIFIO](./mermaid-diagram.png)
 
+## Contas De Teste
+
+USUARIO:
+Nome: ContaUsuario01
+E-Mail: usuario01@unifio.edu.br
+Senha: senhaforte123
+
+ADMIN:
+Nome: Adm12345
+E-Mail: administrador01@unifio.edu.br
+Senha: senhateste456
+
+*Nota: todas essas contas são apenas para fins de teste, não possuem informações reais, para utilizar elas, mude o application.properties e mudem as configurações do banco de update para create*
+
 ## Integrantes
 
 | Nome | RA |
