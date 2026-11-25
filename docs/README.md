@@ -21,28 +21,13 @@ A API autentica os usuários e gerencia as publicações de itens perdidos e enc
 
 ## Como executar
 
-O repositório inclui um Dev Container que configura o Java, inicia o MySQL e fornece à API as credenciais do banco.
+1. Utilize um codespaces
 
-1. Instale o **Git**, o **Docker** com suporte a Compose e o **VS Code** com a extensão **Dev Containers**. Inicie o Docker.
+2. Entre no codespaces e configure o container caso necessário
 
-2. Clone o repositório e abra a pasta no VS Code.
+3. Execute a aplicação
 
-   ```bash
-   git clone https://github.com/luis-miguel-cassoni-prof/projeto-integrador-back-end.git
-   cd projeto-integrador-back-end
-   code .
-   ```
-
-3. No VS Code, pressione `F1`, selecione **Dev Containers: Reopen in Container** e aguarde a preparação do ambiente.
-
-4. No terminal integrado do contêiner, inicie a API.
-
-   ```bash
-   cd /workspaces/pi
-   bash mvnw spring-boot:run
-   ```
-
-5. Quando o log confirmar a inicialização do Spring Boot, use `http://localhost:8080` como endereço base da API.
+4. O nome, o usuário e a senha do banco de dados estão no arquivo .devcontainer
 
 ## Diagrama de classes
 
@@ -63,6 +48,10 @@ E-Mail: administrador01@unifio.edu.br
 Senha: senhateste456
 
 *Nota: todas essas contas são apenas para fins de teste, não possuem informações reais, para utilizar elas, mude o application.properties e mudem as configurações do banco de update para create*
+
+## Evidências
+
+As evidências estão no arquivo postman do docs, siga as instruções corretamente, não esqueça dos tokens Csrf e do cabeçalho.
 
 ## Integrantes
 
